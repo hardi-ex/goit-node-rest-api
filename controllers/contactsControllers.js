@@ -49,3 +49,15 @@ export const updateContact = ctrlWrapper(async (req, res, next) => {
 
   res.json(result);
 });
+
+export const updateStatusContact = ctrlWrapper(async (req, res) => {
+  const { id } = req.params;
+  const { favorite = false } = req.body;
+
+  const result = await contactsService.updContact(id, { favorite });
+
+  if (!result) {
+    throw HttpError(404, `Contact with id=${id} not found`);
+  }
+  res.json(result);
+});
