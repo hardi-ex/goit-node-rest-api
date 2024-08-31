@@ -1,59 +1,17 @@
-import { randomUUID } from "node:crypto";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import Contact from "../models/Contact.js";
 
-const contactsPath = path.resolve("db", "contacts.json");
+export const listContacts = (filter, settings) =>
+  Contact.find(filter, "-createdAt -updatedAt", settings).populate(
+    "owner",
+    "email subscription"
+  );
 
-const updJSON = (item) =>
-  fs.writeFile(contactsPath, JSON.stringify(item, null, 2));
+export const getOneContact = (filter) => Contact.findOne(filter);
 
-export const listContacts = async () => {
-  const data = await fs.readFile(contactsPath, "utf-8");
-  return JSON.parse(data);
-};
+export const addContact = (name, email, phone, owner) =>
+  Contact.create({ name, email, phone, owner });
 
-export const getContactById = async (contactId) => {
-  const contacts = await listContacts();
-  const data = contacts.find((contact) => contact.id === contactId);
-  return data || null;
-};
+export const updContact = (filter, dataContact) =>
+  Contact.findOneAndUpdate(filter, dataContact);
 
-export const addContact = async (name, email, phone) => {
-  const contacts = await listContacts();
-  const newContact = {
-    id: randomUUID(),
-    name,
-    email,
-    phone,
-  };
-
-  contacts.push(newContact);
-  await updJSON(contacts);
-
-  return newContact || null;
-};
-
-export const updContact = async (contactId, dataContact) => {
-  const contacts = await listContacts();
-  const dataIndex = contacts.findIndex((contact) => contact.id === contactId);
-
-  if (dataIndex === -1) return null;
-
-  contacts[dataIndex] = { ...contacts[dataIndex], ...dataContact };
-  await updJSON(contacts);
-
-  return contacts[dataIndex];
-};
-
-export const removeContact = async (contactId) => {
-  const contacts = await listContacts();
-  const dataIndex = contacts.findIndex((contact) => contact.id === contactId);
-
-  if (dataIndex === -1) return null;
-
-  const [data] = contacts.splice(dataIndex, 1);
-
-  await updJSON(contacts);
-
-  return data;
-};
+export const removeContact = (filter) => Contact.findOneAndDelete(filter);
