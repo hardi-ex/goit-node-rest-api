@@ -4,6 +4,8 @@ import HttpError from "../helpers/HttpError.js";
 import User from "../models/User.js";
 import { createToken } from "../helpers/jwt.js";
 
+import gravatar from "gravatar";
+
 export const findUser = (filter) => User.findOne(filter);
 export const updateUser = (filter, data) => User.findOneAndUpdate(filter, data);
 
@@ -15,8 +17,13 @@ export const signup = async (data) => {
     throw HttpError(409, "Email in use");
   }
   const hashPassword = await bcrypt.hash(password, 10);
+  const avatar = gravatar.url(email, {
+    rating: "g",
+    default: "retro",
+    protocol: "https",
+  });
 
-  return User.create({ ...data, password: hashPassword });
+  return User.create({ ...data, password: hashPassword, avatarURL: avatar });
 };
 
 export const signIn = async (data) => {
